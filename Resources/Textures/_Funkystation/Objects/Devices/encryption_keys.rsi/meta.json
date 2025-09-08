@@ -86,6 +86,9 @@
             "name": "label-freelance"
         },
         {
+            "name": "label-smuggler"
+        },
+        {
             "name": "label-future",
             "delays": [
                 [ 0.2, 0.2, 0.2, 0.2 ]

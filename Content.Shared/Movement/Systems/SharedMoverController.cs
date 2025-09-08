@@ -83,6 +83,7 @@ public abstract partial class SharedMoverController : VirtualController
     [Dependency] protected readonly SharedPhysicsSystem Physics = default!;
     [Dependency] private   readonly SharedTransformSystem _transform = default!;
     [Dependency] private   readonly TagSystem _tags = default!;
+    [Dependency] private   MuteFootstepSystem _muteFootstepSystem = default!; // Midnight: Holdout kit
 
     protected EntityQuery<InputMoverComponent> MoverQuery;
     protected EntityQuery<MobMoverComponent> MobMoverQuery;
@@ -128,7 +129,7 @@ public abstract partial class SharedMoverController : VirtualController
         CanMoveInAirQuery = GetEntityQuery<CanMoveInAirComponent>();
         FootstepModifierQuery = GetEntityQuery<FootstepModifierComponent>();
         MapGridQuery = GetEntityQuery<MapGridComponent>();
-
+        _muteFootstepSystem = EntitySystem.Get<MuteFootstepSystem>(); // Midnight: Holdout kit
         InitializeInput();
         InitializeRelay();
         Subs.CVar(_configManager, CCVars.RelativeMovement, value => _relativeMovement = value, true);
@@ -467,6 +468,12 @@ public abstract partial class SharedMoverController : VirtualController
         if (!CanSound() || !_tags.HasTag(uid, FootstepSoundTag))
             return false;
 
+        // Midnight: Check for shoes that mute walking footsteps
+        if (_muteFootstepSystem.ShouldMute(uid, mover))
+        {
+            return false;
+        }
+        
         var coordinates = xform.Coordinates;
         var distanceNeeded = mover.Sprinting
             ? mobMover.StepSoundMoveDistanceRunning
